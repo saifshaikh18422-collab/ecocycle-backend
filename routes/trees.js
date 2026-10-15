@@ -2,6 +2,7 @@ const express = require('express');
 const Tree = require('../models/Tree');
 const { verifyToken, requireRole, optionalAuth } = require('../middleware/authMiddleware');
 const { SPECIES, clamp, project, toClient } = require('../utils/treeCare');
+const { buildSamples } = require('../utils/sampleTrees');
 
 const router = express.Router();
 
@@ -16,6 +17,21 @@ router.get('/', async (req, res) => {
     const trees = await Tree.find().sort({ createdAt: -1 }).limit(500);
     res.json(trees.map(t => toClient(t)));
   } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// SAMPLE DATA — adds 8 demo plantations, but ONLY when no plantations exist yet
+router.post('/demo-seed', async (req, res) => {
+  try {
+    if ((await Tree.countDocuments()) > 0) {
+      return res.status(409).json({ message: 'Plantations already exist, so sample data was not added' });
+    }
+    for (const row of buildSamples()) await Tree.create(row);
+    const trees = await Tree.find().sort({ createdAt: -1 }).limit(500);
+    res.status(201).json(trees.map(t => toClient(t)));
+  } catch (err) {
+    if (err && err.code === 11000) return res.status(409).json({ message: 'Sample data is already being added' });
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
