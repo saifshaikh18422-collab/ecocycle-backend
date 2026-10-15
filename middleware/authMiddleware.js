@@ -25,4 +25,14 @@ function requireRole(...roles) {
   };
 }
 
-module.exports = { verifyToken, requireRole };
+function optionalAuth(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    try {
+      req.user = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET);
+    } catch (err) { /* ignore bad token — request continues as anonymous */ }
+  }
+  next();
+}
+
+module.exports = { verifyToken, requireRole, optionalAuth };

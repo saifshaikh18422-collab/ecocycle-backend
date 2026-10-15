@@ -11,6 +11,7 @@ const routeRoutes = require('./routes/routes');
 const alertRoutes = require('./routes/alerts');
 const userRoutes = require('./routes/users');
 const statsRoutes = require('./routes/stats');
+const treeRoutes = require('./routes/trees');
 
 const app = express();
 app.use(cors());
@@ -33,6 +34,7 @@ app.use('/api/routes', routeRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/trees', treeRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
